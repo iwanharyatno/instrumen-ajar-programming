@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi File Path Interaktif - Instrumen Mengajar HTML</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Font Family -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+            font-variant-ligatures: none;
+            font-feature-settings: "liga" 0, "calt" 0;
+        }
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between" x-data="filePathSimulator()">
+
+    <!-- Main Content Grid -->
+    <main class="max-w-7xl w-full mx-auto p-4 md:p-6 flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- KIRI: VS Code Style File Tree (5 Cols) -->
+        <section class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden shadow-2xl">
+            <div class="bg-slate-800/90 border-b border-slate-700/80 px-4 py-3 flex items-center justify-between">
+                <span class="text-xs font-bold uppercase tracking-wider text-slate-400">EXPLORER: PROJECT ROOT</span>
+                <div class="flex items-center gap-1.5">
+                    <span class="w-3 h-3 rounded-full bg-rose-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-amber-500/80 inline-block"></span>
+                    <span class="w-3 h-3 rounded-full bg-emerald-500/80 inline-block"></span>
+                </div>
+            </div>
+
+            <div class="bg-indigo-950/40 border-b border-indigo-900/50 px-4 py-2 text-xs text-indigo-300 flex items-center justify-between">
+                <span>💡 Klik file/folder untuk dijadikan <b>Starting Point</b></span>
+                <span class="text-[10px] bg-indigo-900/80 px-1.5 py-0.5 rounded text-indigo-200">Interactive</span>
+            </div>
+
+            <!-- Tree View Content -->
+            <div class="p-4 overflow-y-auto flex-1 code-font text-sm space-y-1">
+                <template x-for="item in treeList" :key="item.path">
+                    <div 
+                        @click="setStartPoint(item.path)"
+                        :style="'padding-left: ' + (item.level * 18 + 12) + 'px;'"
+                        :class="{
+                            'bg-amber-500/20 border-l-4 border-amber-400 text-amber-200 font-semibold shadow-inner': isTarget(item.path),
+                            'bg-indigo-600/30 text-indigo-200 ring-1 ring-indigo-500/50': isStart(item.path) && !isTarget(item.path),
+                            'hover:bg-slate-800 text-slate-300': !isTarget(item.path) && !isStart(item.path)
+                        }"
+                        class="py-1.5 pr-3 rounded-md cursor-pointer transition-all duration-150 flex items-center justify-between group relative"
+                    >
+                        <div class="flex items-center gap-2 truncate">
+                            <span class="text-base select-none" x-text="getIcon(item)"></span>
+                            <span class="truncate" x-text="item.name"></span>
+                        </div>
+
+                        <div class="flex items-center gap-1 shrink-0">
+                            <template x-if="isStart(item.path)">
+                                <span class="text-[10px] font-sans font-bold bg-indigo-500 text-white px-1.5 py-0.5 rounded shadow">
+                                    START
+                                </span>
+                            </template>
+                            <template x-if="isTarget(item.path)">
+                                <span class="text-[10px] font-sans font-bold bg-amber-400 text-slate-950 px-1.5 py-0.5 rounded shadow animate-bounce">
+                                    TARGET 🎯
+                                </span>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+            </div>
+
+            <div class="bg-slate-950/80 border-t border-slate-800 p-3 text-xs text-slate-400 grid grid-cols-2 gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded bg-indigo-500 inline-block"></span>
+                    <span>Starting Point (Awal)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded bg-amber-400 inline-block"></span>
+                    <span>Target Node (Hasil)</span>
+                </div>
+            </div>
+        </section>
+
+
+        <!-- KANAN: Panel Kontrol & Eksperimen Path (7 Cols) -->
+        <section class="lg:col-span-7 flex flex-col gap-6">
+
+            <!-- Panel Inputs -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-2xl space-y-5">
+                <h2 class="text-lg font-bold text-slate-200 flex items-center gap-2">
+                    <span>⚡ Simulator Navigasi Path</span>
+                </h2>
+
+                <!-- Starting Point Dropdown -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                        <span>1. Pilih Starting Point (Posisi Berada Sekarang):</span>
+                        <span class="text-indigo-400 font-mono font-normal text-xs" x-text="startPath"></span>
+                    </label>
+                    <select 
+                        x-model="startPath"
+                        class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 rounded-xl px-4 py-2.5 text-sm code-font text-slate-200 outline-none transition"
+                    >
+                        <template x-for="item in treeList" :key="item.path">
+                            <option :value="item.path" x-text="(item.isDir ? '📁 ' : '📄 ') + item.path"></option>
+                        </template>
+                    </select>
+                </div>
+
+                <!-- Textfield Path Input -->
+                <div class="space-y-2">
+                    <label class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center justify-between">
+                        <span>2. Ketik Target Path (Relative / Absolute):</span>
+                        <span class="text-slate-500 text-[11px] font-normal">Contoh: <code class="text-amber-300">../../assets/css/style.css</code></span>
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            x-model="inputPath"
+                            placeholder="Ketik path di sini, contoh: ./about.html atau ../assets/images/logo.png"
+                            class="w-full bg-slate-950 border border-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/40 rounded-xl pl-4 pr-10 py-3 text-sm code-font text-amber-300 placeholder:text-slate-600 outline-none transition shadow-inner"
+                        />
+                        <button 
+                            @click="inputPath = ''" 
+                            x-show="inputPath.length > 0"
+                            class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1"
+                        >
+                            ✕
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Preset Buttons -->
+                <div class="space-y-2 pt-2 border-t border-slate-800">
+                    <span class="text-xs font-semibold text-slate-400 block">🚀 Studi Kasus / Shortcut Soal Latihan:</span>
+                    <div class="flex flex-wrap gap-2">
+                        <button 
+                            @click="loadPreset('/pages/blog/post-1.html', '../../assets/images/logo.png')"
+                            class="bg-slate-800 hover:bg-indigo-950 hover:border-indigo-500 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 transition"
+                        >
+                            📍 Blog Post ke Logo (<code class="text-indigo-300">../../</code>)
+                        </button>
+                        <button 
+                            @click="loadPreset('/pages/blog/index.html', 'post-1.html')"
+                            class="bg-slate-800 hover:bg-indigo-950 hover:border-indigo-500 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 transition"
+                        >
+                            📍 Blog Index ke Post-1 (Satu Folder)
+                        </button>
+                        <button 
+                            @click="loadPreset('/assets/css/style.css', '../images/icons/favicon.ico')"
+                            class="bg-slate-800 hover:bg-indigo-950 hover:border-indigo-500 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 transition"
+                        >
+                            📍 CSS ke Favicon Icon
+                        </button>
+                        <button 
+                            @click="loadPreset('/pages/gallery/photo.html', '/index.html')"
+                            class="bg-slate-800 hover:bg-indigo-950 hover:border-indigo-500 text-xs px-3 py-1.5 rounded-lg border border-slate-700 text-slate-300 transition"
+                        >
+                            📍 Gallery ke Home Root (<code class="text-amber-300">/</code> Absolute)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Panel Status & Hasil Resolusi -->
+            <div 
+                :class="resolvedStatus.found ? 'bg-slate-900 border-emerald-500/50' : 'bg-slate-900 border-rose-500/50'"
+                class="border rounded-2xl p-6 shadow-2xl transition-all duration-300 space-y-4"
+            >
+                <div class="flex items-center justify-between">
+                    <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Hasil Evaluasi Path:</span>
+                    <template x-if="resolvedStatus.found">
+                        <span class="bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                            PATH VALID & DITEMUKAN!
+                        </span>
+                    </template>
+                    <template x-if="!resolvedStatus.found">
+                        <span class="bg-rose-500/20 text-rose-300 border border-rose-500/40 text-xs px-3 py-1 rounded-full font-bold flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-rose-400"></span>
+                            FILE/FOLDER TIDAK DITEMUKAN (404)
+                        </span>
+                    </template>
+                </div>
+
+                <div class="bg-slate-950 rounded-xl p-4 code-font text-xs space-y-2 border border-slate-800">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span class="text-slate-500">Current Directory (CWD):</span>
+                        <span class="text-indigo-400 font-semibold" x-text="getCwd()"></span>
+                    </div>
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span class="text-slate-500">Input Path:</span>
+                        <span class="text-amber-300 font-semibold" x-text="inputPath || '(kosong)'"></span>
+                    </div>
+                    <div class="pt-2 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                        <span class="text-slate-400 font-bold">Resolved Absolute Path:</span>
+                        <span class="text-emerald-400 font-bold text-sm" x-text="resolvedStatus.resolvedPath"></span>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/60 rounded-xl p-4 text-xs text-slate-300 space-y-2 border border-slate-700/50">
+                    <div class="font-bold text-indigo-300 flex items-center gap-2">
+                        <span>🎓 Penjelasan Logika untuk Siswa:</span>
+                    </div>
+                    <p class="leading-relaxed" x-text="getExplanation()"></p>
+                </div>
+            </div>
+
+            <!-- Cheat Sheet Ringkas File Path -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 text-xs space-y-3">
+                <h3 class="font-bold text-slate-300 flex items-center gap-2">
+                    <span>📚 Ringkasan Aturan File Path:</span>
+                </h3>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 code-font">
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <div class="text-indigo-400 font-bold mb-1">./ (Folder Sama)</div>
+                        <p class="text-[11px] text-slate-400 font-sans">Mencari file yang berada di dalam folder tempat file saat ini berada.</p>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <div class="text-amber-400 font-bold mb-1">../ (Naik 1 Level)</div>
+                        <p class="text-[11px] text-slate-400 font-sans">Keluar dari folder saat ini menuju folder satu tingkat di atasnya.</p>
+                    </div>
+                    <div class="bg-slate-950 p-3 rounded-lg border border-slate-800">
+                        <div class="text-emerald-400 font-bold mb-1">/ (Absolute Path)</div>
+                        <p class="text-[11px] text-slate-400 font-sans">Dimulai langsung dari folder utama (root project) tanpa peduli lokasi asal.</p>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+    <footer class="bg-slate-900 border-t border-slate-800 py-3 text-center text-xs text-slate-500">
+        Instrumen Pengajaran Ekskul Pemrograman • Dibuat khusus untuk Pembelajaran Visual HTML & File Paths
+    </footer>
+
+    <!-- Alpine.js Application Logic -->
+    <script>
+        function filePathSimulator() {
+            return {
+                // Tree List dengan Elemen Root (Level 0) dan penyesuaian offset level anak-anaknya
+                treeList: [
+                    { path: '/', name: 'root (/)', isDir: true, level: 0, type: 'folder' },
+                    
+                    { path: '/index.html', name: 'index.html', isDir: false, level: 1, type: 'html' },
+                    { path: '/about.html', name: 'about.html', isDir: false, level: 1, type: 'html' },
+                    { path: '/contact.html', name: 'contact.html', isDir: false, level: 1, type: 'html' },
+                    { path: '/favicon.ico', name: 'favicon.ico', isDir: false, level: 1, type: 'image'},
+                    
+                    { path: '/assets', name: 'assets', isDir: true, level: 1, type: 'folder' },
+                    { path: '/assets/css', name: 'css', isDir: true, level: 2, type: 'folder' },
+                    { path: '/assets/css/style.css', name: 'style.css', isDir: false, level: 3, type: 'css' },
+                    
+                    { path: '/assets/js', name: 'js', isDir: true, level: 2, type: 'folder' },
+                    { path: '/assets/js/app.js', name: 'app.js', isDir: false, level: 3, type: 'js' },
+                    
+                    { path: '/assets/images', name: 'images', isDir: true, level: 2, type: 'folder' },
+                    { path: '/assets/images/logo.png', name: 'logo.png', isDir: false, level: 3, type: 'image' },
+                    // { path: '/assets/images/hero.jpg', name: 'hero.jpg', isDir: false, level: 3, type: 'image' },
+                    { path: '/assets/images/icons', name: 'icons', isDir: true, level: 3, type: 'folder' },
+                    // { path: '/assets/images/icons/favicon.ico', name: 'favicon.ico', isDir: false, level: 4, type: 'image' },
+                    { path: '/assets/images/icons/star.svg', name: 'star.svg', isDir: false, level: 4, type: 'image' },
+                    
+                    // { path: '/pages', name: 'pages', isDir: true, level: 1, type: 'folder' },
+                    // { path: '/pages/blog', name: 'blog', isDir: true, level: 2, type: 'folder' },
+                    // { path: '/pages/blog/index.html', name: 'index.html', isDir: false, level: 3, type: 'html' },
+                    // { path: '/pages/blog/post-1.html', name: 'post-1.html', isDir: false, level: 3, type: 'html' },
+                    
+                    // { path: '/pages/gallery', name: 'gallery', isDir: true, level: 2, type: 'folder' },
+                    // { path: '/pages/gallery/photo.html', name: 'photo.html', isDir: false, level: 3, type: 'html' }
+                ],
+
+                startPath: '/pages/blog/post-1.html',
+                inputPath: '../../assets/images/logo.png',
+
+                isStart(path) {
+                    return this.startPath === path;
+                },
+
+                isTarget(path) {
+                    return this.resolvedStatus.found && this.resolvedStatus.resolvedPath === path;
+                },
+
+                setStartPoint(path) {
+                    this.startPath = path;
+                },
+
+                loadPreset(start, input) {
+                    this.startPath = start;
+                    this.inputPath = input;
+                },
+
+                getIcon(item) {
+                    if (item.path === '/') return '🖥️';
+                    if (item.isDir) return '📂';
+                    if (item.type === 'html') return '🌐';
+                    if (item.type === 'css') return '🎨';
+                    if (item.type === 'js') return '⚡';
+                    if (item.type === 'image') return '🖼️';
+                    return '📄';
+                },
+
+                getCwd() {
+                    const startNode = this.treeList.find(i => i.path === this.startPath);
+                    if (!startNode) return '/';
+                    if (startNode.isDir) return startNode.path;
+                    
+                    const parts = startNode.path.split('/');
+                    parts.pop();
+                    const dir = parts.join('/');
+                    return dir === '' ? '/' : dir;
+                },
+
+                get resolvedStatus() {
+                    const rawInput = (this.inputPath || '').trim();
+                    if (!rawInput) {
+                        return { found: false, resolvedPath: '(Belum ada input path)' };
+                    }
+
+                    let resolved = '';
+
+                    if (rawInput.startsWith('/')) {
+                        resolved = this.normalizePath(rawInput);
+                    } else {
+                        const cwd = this.getCwd();
+                        const baseParts = cwd === '/' ? [] : cwd.split('/').filter(Boolean);
+                        const inputParts = rawInput.split('/').filter(Boolean);
+
+                        for (let part of inputParts) {
+                            if (part === '.') {
+                                continue;
+                            } else if (part === '..') {
+                                if (baseParts.length > 0) {
+                                    baseParts.pop();
+                                }
+                            } else {
+                                baseParts.push(part);
+                            }
+                        }
+
+                        resolved = '/' + baseParts.join('/');
+                    }
+
+                    const exists = this.treeList.some(item => item.path === resolved);
+
+                    return {
+                        found: exists,
+                        resolvedPath: resolved
+                    };
+                },
+
+                normalizePath(pathStr) {
+                    const parts = pathStr.split('/').filter(Boolean);
+                    const stack = [];
+                    for (let p of parts) {
+                        if (p === '.') continue;
+                        if (p === '..') {
+                            if (stack.length > 0) stack.pop();
+                        } else {
+                            stack.push(p);
+                        }
+                    }
+                    return '/' + stack.join('/');
+                },
+
+                getExplanation() {
+                    const input = (this.inputPath || '').trim();
+                    if (!input) return "Ketik file path pada kotak teks di atas untuk melihat penjelasannya.";
+
+                    const cwd = this.getCwd();
+
+                    if (input.startsWith('/')) {
+                        return `Path diawali dengan slash ('/'), menandakan ini adalah ABSOLUTE PATH. Browser akan mencari file '${this.resolvedStatus.resolvedPath}' langsung dari Root Folder utama project.`;
+                    }
+
+                    let text = `Karena berada di '${cwd}', navigasi RELATIVE PATH dihitung dari folder tersebut. `;
+
+                    if (input.includes('../')) {
+                        const count = (input.match(/\.\.\//g) || []).length;
+                        text += `Terdapat '${count}x ../' yang berarti keluar/naik ${count} tingkat folder ke atas. `;
+                    } else if (input.startsWith('./')) {
+                        text += `Awalan './' menandakan pencarian dilakukan di dalam folder yang sama. `;
+                    } else {
+                        text += `Secara langsung menunjuk ke file/folder di dalam direktori saat ini. `;
+                    }
+
+                    if (this.resolvedStatus.found) {
+                        text += `Navigasi ini berhasil menemukan node '${this.resolvedStatus.resolvedPath}'.`;
+                    } else {
+                        text += `Namun hasil akhir '${this.resolvedStatus.resolvedPath}' tidak ditemukan di dalam struktur folder project ini!`;
+                    }
+
+                    return text;
+                }
+            };
+        }
+    </script>
+</body>
+</html>

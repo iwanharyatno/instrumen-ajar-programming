@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Tag Flashcards - Media Pembelajaran Ekskul</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #311042 100%);
+            --card-bg-front: #ffffff;
+            --card-bg-back: #0f172a;
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --text-light: #f8fafc;
+            --border-radius: 20px;
+            --shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3), 0 8px 10px -6px rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-light);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-top: 10px;
+            margin-bottom: 20px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #c084fc, #f472b6);
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+
+        .controls-top {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 8px 16px;
+            border-radius: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .progress-text {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .badge {
+            background: var(--primary);
+            color: white;
+            padding: 2px 10px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+        }
+
+        .card-container {
+            width: 100%;
+            max-width: 520px;
+            height: 340px;
+            perspective: 1000px;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card-container.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+
+        .card-front {
+            background: var(--card-bg-front);
+            color: var(--text-main);
+        }
+
+        .card-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        .front-label {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .back-label {
+            background: #334155;
+            color: #38bdf8;
+        }
+
+        .render-box {
+            font-size: 1.6rem;
+            line-height: 1.6;
+            color: #0f172a;
+            word-break: break-word;
+            margin-top: 10px;
+        }
+
+        .hint-text {
+            position: absolute;
+            bottom: 20px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .card-back {
+            background: var(--card-bg-back);
+            color: var(--text-light);
+            transform: rotateY(180deg);
+            text-align: left;
+            align-items: flex-start;
+            justify-content: space-between;
+        }
+
+        .code-title {
+            color: #94a3b8;
+            font-size: 0.85rem;
+            margin-bottom: 6px;
+        }
+
+        .code-box {
+            width: 100%;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            font-family: 'Fira Code', monospace;
+            font-size: 1.1rem;
+            color: #38bdf8;
+            margin-bottom: 15px;
+            overflow-x: auto;
+        }
+
+        .desc-title {
+            font-weight: 700;
+            font-size: 1rem;
+            color: #f1f5f9;
+            margin-bottom: 4px;
+        }
+
+        .desc-text {
+            font-size: 0.9rem;
+            color: #cbd5e1;
+            line-height: 1.5;
+        }
+
+        .controls-bottom {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 12px 24px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(10px);
+        }
+
+        .btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-hover);
+        }
+
+        footer {
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        @media (max-width: 580px) {
+            .card-container {
+                height: 380px;
+            }
+            header h1 {
+                font-size: 1.8rem;
+            }
+            .render-box {
+                font-size: 1.3rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>HTML Formatting Flashcards 🎴</h1>
+        <p>Tekan Kartu Untuk Melihat Tag</p>
+    </header>
+
+    <div class="controls-top">
+        <span class="progress-text">Kartu <span id="current-index">1</span> dari <span id="total-cards">10</span></span>
+    </div>
+
+    <!-- Flashcard -->
+    <div class="card-container" id="card" onclick="flipCard()">
+        <div class="card-inner">
+            <!-- Tampilan Depan (Render) -->
+            <div class="card-front">
+                <div class="card-label front-label">Depan: Hasil Render HTML</div>
+                <div class="render-box" id="render-content"></div>
+                <div class="hint-text">
+                    💡 <span>Klik kartu untuk balik & lihat Tag HTML</span>
+                </div>
+            </div>
+
+            <!-- Tampilan Belakang (Kode Tag) -->
+            <div class="card-back">
+                <div class="card-label back-label">Belakang: Tag HTML & Fungsi</div>
+                <div style="width: 100%; margin-top: 25px;">
+                    <div class="code-title">Kode HTML yang Digunakan:</div>
+                    <div class="code-box" id="code-content"></div>
+                    <div class="desc-box">
+                        <div class="desc-title" id="tag-name"></div>
+                        <p class="desc-text" id="tag-desc"></p>
+                    </div>
+                </div>
+                <div class="hint-text" style="color: #64748b;">
+                    💡 <span>Klik kartu untuk kembali ke tampilan render</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigasi -->
+    <div class="controls-bottom">
+        <button class="btn" onclick="prevCard()">← Sebelum</button>
+        <button class="btn" onclick="randomCard()">🔀 Acak</button>
+        <button class="btn btn-primary" onclick="nextCard()">Lanjut →</button>
+    </div>
+
+    <footer>
+        Media Ajar Ekskul Pemrograman • Modul Format Teks HTML
+    </footer>
+
+    <script>
+        const flashcards = [
+            {
+                tag: "<b>",
+                render: "<b>Bulan</b> adalah",
+                code: "&lt;b&gt;Bulan&lt;/b&gt;",
+                name: "Tag <b> (Bold Text)",
+                desc: "Mencetak tebal teks secara visual tanpa memberikan penekanan makna khusus secara semantik."
+            },
+            {
+                tag: "<strong>",
+                render: "<strong>Penting untuk Bumi</strong> dan kehidupan",
+                code: "&lt;strong&gt;Penting untuk Bumi&lt;/strong&gt;",
+                name: "Tag <strong> (Important Text)",
+                desc: "Mencetak tebal teks sekaligus menandakan bahwa isi teks tersebut sangat penting/mendesak secara semantik."
+            },
+            {
+                tag: "<i>",
+                render: "Ilmu <i>Astronomi</i>",
+                code: "&lt;i&gt;Astronomi&lt;/i&gt;",
+                name: "Tag <i> (Italic Text)",
+                desc: "Mencetak miring teks. Umumnya digunakan untuk istilah teknis, bahasa asing, atau nama ilmiah."
+            },
+            {
+                tag: "<em>",
+                render: "matahari <em>Bersinar terang</em>",
+                code: "&lt;em&gt;Bersinar terang&lt;/em&gt;",
+                name: "Tag <em> (Emphasized Text)",
+                desc: "Mencetak miring teks dengan memberikan penekanan ucapan (emphasis) pada kalimat."
+            },
+            {
+                tag: "<mark>",
+                render: "mencapai <mark>Suhu 120 °C</mark>",
+                code: "&lt;mark&gt;Suhu 120 °C&lt;/mark&gt;",
+                name: "Tag <mark> (Marked / Highlighted Text)",
+                desc: "Memberikan warna latar belakang (stabilo/highlight) untuk menandai teks yang relevan atau penting."
+            },
+            {
+                tag: "<small>",
+                render: "Meskipun terlihat dekat, <small>jarak Bulan ke Bumi: 384.400 km</small>",
+                code: "&lt;small&gt;Jarak Bulan ke Bumi: 384.400 km&lt;/small&gt;",
+                name: "Tag <small> (Smaller Text)",
+                desc: "Memperkecil ukuran teks. Sangat cocok digunakan untuk catatan kaki, syarat & ketentuan, atau keterangan sampingan."
+            },
+            {
+                tag: "<del>",
+                render: "<del>Atmosfer tebal</del>",
+                code: "&lt;del&gt;Atmosfer tebal&lt;/del&gt;",
+                name: "Tag <del> (Deleted Text)",
+                desc: "Coret tengah pada teks. Menandakan bahwa informasi/teks tersebut telah dihapus atau sudah tidak relevan lagi."
+            },
+            {
+                tag: "<ins>",
+                render: "<ins>Atmosfer sangat tipis</ins>",
+                code: "&lt;ins&gt;Atmosfer sangat tipis&lt;/ins&gt;",
+                name: "Tag <ins> (Inserted Text)",
+                desc: "Memberikan garis bawah pada teks. Menandakan teks/informasi baru yang ditambahkan ke dalam dokumen."
+            },
+            {
+                tag: "<sub>",
+                render: "Molekul Air: H<sub>2</sub>O",
+                code: "Molekul Air: H&lt;sub&gt;2&lt;/sub&gt;O",
+                name: "Tag <sub> (Subscript Text)",
+                desc: "Menurunkan posisi teks sedikit ke bawah dengan ukuran lebih kecil. Sangat berguna untuk rumus kimia (misal: H₂O)."
+            },
+            {
+                tag: "<sup>",
+                render: "Luas: 3.8 × 10<sup>7</sup> km²",
+                code: "Luas: 3.8 × 10&lt;sup&gt;7&lt;/sup&gt; km²",
+                name: "Tag <sup> (Superscript Text)",
+                desc: "Menaikkan posisi teks sedikit ke atas dengan ukuran lebih kecil. Digunakan untuk pangkat matematika atau eksponen (misal: 10⁷)."
+            }
+        ];
+
+        let currentIndex = 0;
+        const cardElement = document.getElementById("card");
+        const renderContent = document.getElementById("render-content");
+        const codeContent = document.getElementById("code-content");
+        const tagName = document.getElementById("tag-name");
+        const tagDesc = document.getElementById("tag-desc");
+        const currentIndexEl = document.getElementById("current-index");
+        const totalCardsEl = document.getElementById("total-cards");
+
+        totalCardsEl.textContent = flashcards.length;
+
+        function updateCardData() {
+            const current = flashcards[currentIndex];
+            renderContent.innerHTML = current.render;
+            codeContent.innerHTML = current.code;
+            tagName.textContent = current.name;
+            tagDesc.textContent = current.desc;
+            currentIndexEl.textContent = currentIndex + 1;
+        }
+
+        function flipCard() {
+            cardElement.classList.toggle("flipped");
+        }
+
+        function nextCard() {
+            if (cardElement.classList.contains("flipped")) {
+                cardElement.classList.remove("flipped");
+                setTimeout(() => {
+                    currentIndex = (currentIndex + 1) % flashcards.length;
+                    updateCardData();
+                }, 300);
+            } else {
+                currentIndex = (currentIndex + 1) % flashcards.length;
+                updateCardData();
+            }
+        }
+
+        function prevCard() {
+            if (cardElement.classList.contains("flipped")) {
+                cardElement.classList.remove("flipped");
+                setTimeout(() => {
+                    currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+                    updateCardData();
+                }, 300);
+            } else {
+                currentIndex = (currentIndex - 1 + flashcards.length) % flashcards.length;
+                updateCardData();
+            }
+        }
+
+        function randomCard() {
+            let randomIndex;
+            do {
+                randomIndex = Math.floor(Math.random() * flashcards.length);
+            } while (randomIndex === currentIndex && flashcards.length > 1);
+
+            if (cardElement.classList.contains("flipped")) {
+                cardElement.classList.remove("flipped");
+                setTimeout(() => {
+                    currentIndex = randomIndex;
+                    updateCardData();
+                }, 300);
+            } else {
+                currentIndex = randomIndex;
+                updateCardData();
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === "ArrowRight") nextCard();
+            if (e.key === "ArrowLeft") prevCard();
+            if (e.key === " " || e.key === "Enter") {
+                e.preventDefault();
+                flipCard();
+            }
+        });
+
+        updateCardData();
+    </script>
+</body>
+</html>
