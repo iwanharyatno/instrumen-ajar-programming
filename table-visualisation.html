@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualisasi p5.js - Live Code & Analogi Tabel HTML</title>
+    <!-- p5.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.9.0/p5.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #0f172a;
+            color: #f8fafc;
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* Container Side-by-Side */
+        .app-layout {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            max-width: 1150px;
+            width: 100%;
+            align-items: stretch;
+            justify-content: center;
+        }
+
+        /* Side 1: Code Editor Style (Kiri) */
+        .editor-panel {
+            flex: 1;
+            min-width: 360px;
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+        }
+
+        .editor-header {
+            background-color: #0f172a;
+            padding: 10px 16px;
+            border-bottom: 1px solid #334155;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .dot-red { background-color: #ef4444; }
+        .dot-yellow { background-color: #f59e0b; }
+        .dot-green { background-color: #10b981; }
+
+        .editor-title {
+            font-size: 0.8rem;
+            color: #94a3b8;
+            font-family: monospace;
+        }
+
+        .editor-body {
+            padding: 20px;
+            flex: 1;
+            font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+            font-size: 0.95rem;
+            line-height: 1.6;
+            white-space: pre;
+            overflow-x: auto;
+            background-color: #0f172a;
+        }
+
+        /* Styling Tag Highlight Kode */
+        .tag-table { color: #818cf8; font-weight: bold; }  /* Indigo */
+        .tag-tr    { color: #fbbf24; font-weight: bold; }  /* Amber */
+        .tag-td    { color: #38bdf8; font-weight: bold; }  /* Cyan */
+        
+        .highlight-active {
+            background-color: rgba(245, 158, 11, 0.25);
+            border-radius: 4px;
+            padding: 2px 4px;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 15px;
+            background-color: #f59e0b;
+            animation: blink 0.8s infinite;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Side 2: Canvas Container (Kanan) */
+        #canvas-container {
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            background-color: #0f172a;
+        }
+
+        /* Responsif untuk Layar Kecil */
+        @media (max-width: 900px) {
+            .app-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            .editor-panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="app-layout">
+        <!-- PANEL KIRI: LIVE TYPE-OUT CODE EDITOR -->
+        <div class="editor-panel">
+            <div class="editor-header">
+                <div class="dots">
+                    <span class="dot dot-red"></span>
+                    <span class="dot dot-yellow"></span>
+                    <span class="dot dot-green"></span>
+                </div>
+                <div class="editor-title">index.html — Synchronized Code View</div>
+            </div>
+            <div class="editor-body" id="code-display">
+                <!-- Kode HTML tergenerasi otomatis di sini -->
+            </div>
+        </div>
+
+        <!-- PANEL KANAN: ANIMASI P5.JS -->
+        <div id="canvas-container"></div>
+    </div>
+
+    <script>
+        let rows = 3;
+        let cols = 3;
+        let tX = 120, tY = 100, tW = 460, tH = 260;
+
+        // --- VARIABEL KECEPATAN ANIMASI ---
+        let animSpeed = 0.008;
+
+        let step = 0; // 0: Wadah Table, 1: Baris TR, 2: Sel TD, 3: Selesai
+        let animProgress = 0;
+        let curRowLine = 1; // 1 s/d rows-1
+        let curTdRow = 0;   // 0 s/d rows-1
+        let curTdCol = 1;   // 1 s/d cols-1
+        let waitTimer = 0;
+
+        function setup() {
+            let canvas = createCanvas(680, 450);
+            canvas.parent('canvas-container');
+            textFont('sans-serif');
+        }
+
+        function draw() {
+            background(15, 23, 42); // slate-950
+
+            let rowH = tH / rows;
+            let colW = tW / cols;
+
+            // 1. Gambar Judul & Status Langkah
+            drawHeaderAndStatus();
+
+            // 2. Base Kertas Tabel
+            fill(30, 41, 59);
+            stroke(71, 85, 105);
+            strokeWeight(2);
+            rect(tX, tY, tW, tH, 8);
+
+            // Kecepatan coretan penggaris
+            animProgress += animSpeed;
+
+            // --- TAHAP 0: BINGKAI TABLE ---
+            if (step === 0) {
+                stroke(99, 102, 241); // Warna Indigo
+                strokeWeight(4);
+                noFill();
+                rect(tX, tY, min(animProgress * tW, tW), min(animProgress * tH, tH), 8);
+
+                if (animProgress >= 1.2) {
+                    step = 1;
+                    animProgress = 0;
+                    curRowLine = 1;
+                }
+            }
+
+            // --- GAMBAR GARIS TR YANG SUDAH SELESAI ---
+            stroke(99, 102, 241);
+            strokeWeight(3);
+            let maxRowDrawn = (step > 1) ? rows - 1 : curRowLine - 1;
+            for (let r = 1; r <= maxRowDrawn; r++) {
+                let y = tY + r * rowH;
+                line(tX, y, tX + tW, y);
+            }
+
+            // --- TAHAP 1: CORETAN GARIS HORIZONTAL (TR) ---
+            if (step === 1) {
+                let y = tY + curRowLine * rowH;
+                let curX = lerp(tX, tX + tW, min(animProgress, 1));
+
+                // Coretan pensil kuning
+                stroke(245, 158, 11);
+                strokeWeight(4);
+                line(tX, y, curX, y);
+
+                // Ujung pensil/penggaris
+                fill(245, 158, 11);
+                noStroke();
+                ellipse(curX, y, 10, 10);
+
+                if (animProgress >= 1) {
+                    animProgress = 0;
+                    curRowLine++;
+                    if (curRowLine >= rows) {
+                        step = 2;
+                        curTdRow = 0;
+                        curTdCol = 1;
+                    }
+                }
+            }
+
+            // --- GAMBAR GARIS TD YANG SUDAH SELESAI ---
+            if (step >= 2) {
+                stroke(56, 189, 248); // Cyan
+                strokeWeight(3);
+                for (let r = 0; r < rows; r++) {
+                    let limitCol = cols - 1;
+                    if (step === 2) {
+                        if (r === curTdRow) {
+                            limitCol = curTdCol - 1;
+                        } else if (r > curTdRow) {
+                            limitCol = 0;
+                        }
+                    }
+                    for (let c = 1; c <= limitCol; c++) {
+                        let x = tX + c * colW;
+                        let y1 = tY + r * rowH;
+                        let y2 = y1 + rowH;
+                        line(x, y1, x, y2);
+                    }
+                }
+            }
+
+            // --- TAHAP 2: CORETAN GARIS VERTIKAL PER BARIS (TD) ---
+            if (step === 2) {
+                let x = tX + curTdCol * colW;
+                let y1 = tY + curTdRow * rowH;
+                let y2 = y1 + rowH;
+                let curY = lerp(y1, y2, min(animProgress, 1));
+
+                stroke(245, 158, 11);
+                strokeWeight(4);
+                line(x, y1, x, curY);
+
+                fill(245, 158, 11);
+                noStroke();
+                ellipse(x, curY, 10, 10);
+
+                if (animProgress >= 1) {
+                    animProgress = 0;
+                    curTdCol++;
+                    if (curTdCol >= cols) {
+                        curTdCol = 1;
+                        curTdRow++;
+                        if (curTdRow >= rows) {
+                            step = 3;
+                            waitTimer = 0;
+                        }
+                    }
+                }
+            }
+
+            // --- GAMBAR LABEL TAG (TR & TD) ---
+            // Label <tr> di sebelah kiri
+            if (step >= 1) {
+                for (let r = 0; r < rows; r++) {
+                    let isCurrent = (step === 1 && r === curRowLine - 1) || (step === 2 && r === curTdRow);
+                    let yCenter = tY + r * rowH + rowH / 2;
+
+                    fill(isCurrent ? color(245, 158, 11) : color(99, 102, 241));
+                    noStroke();
+                    rect(tX - 95, yCenter - 14, 80, 28, 6);
+
+                    fill(255);
+                    textAlign(CENTER, CENTER);
+                    textSize(12);
+                    textStyle(BOLD);
+                    text(`<tr> #${r + 1}`, tX - 55, yCenter);
+                }
+            }
+
+            // Label <td> di dalam sel
+            if (step >= 2) {
+                for (let r = 0; r < rows; r++) {
+                    for (let c = 0; c < cols; c++) {
+                        let isDrawn = (r < curTdRow) || (r === curTdRow && c < curTdCol) || step === 3;
+                        if (isDrawn) {
+                            let xCenter = tX + c * colW + colW / 2;
+                            let yCenter = tY + r * rowH + rowH / 2;
+
+                            fill(15, 23, 42);
+                            stroke(56, 189, 248);
+                            strokeWeight(1.5);
+                            rect(xCenter - 28, yCenter - 12, 56, 24, 4);
+
+                            fill(56, 189, 248);
+                            noStroke();
+                            textAlign(CENTER, CENTER);
+                            textSize(11);
+                            textStyle(BOLD);
+                            text(`<td>`, xCenter, yCenter);
+                        }
+                    }
+                }
+            }
+
+            // --- TAHAP 3: SELESAI & ULANGI (LOOP) ---
+            if (step === 3) {
+                waitTimer++;
+                if (waitTimer > 180) { // Pause ~3 detik
+                    step = 0;
+                    animProgress = 0;
+                    curRowLine = 1;
+                    curTdRow = 0;
+                    curTdCol = 1;
+                }
+            }
+
+            // --- UPDATE SYNCHRONIZED CODE EDITOR (KIRI) ---
+            updateLiveCodeView();
+        }
+
+        function drawHeaderAndStatus() {
+            fill(241, 245, 249);
+            noStroke();
+            textAlign(CENTER);
+            textSize(16);
+            textStyle(BOLD);
+            text("Analogi Penggaris Kertas: <table> ➔ <tr> ➔ <td>", width / 2, 30);
+
+            textSize(12);
+            textStyle(NORMAL);
+            if (step === 0) {
+                fill(129, 140, 248);
+                text("Langkah 1: Membuat Bingkai Luar Tabel (<table>)", width / 2, 55);
+            } else if (step === 1) {
+                fill(251, 191, 36);
+                text("Langkah 2: Menarik Garis Horizontal Membagi BARIS (<tr>)", width / 2, 55);
+            } else if (step === 2) {
+                fill(56, 189, 248);
+                text(`Langkah 3: Menarik Garis Vertikal Membagi SEL (<td>) pada Baris #${curTdRow + 1}`, width / 2, 55);
+            } else {
+                fill(52, 211, 153);
+                text("✨ Selesai! Tabel Terbentuk Sesuai Struktur HTML", width / 2, 55);
+            }
+        }
+
+        // --- FUNGSI UPDATE SINKRONISASI KODE UTAMA ---
+        function updateLiveCodeView() {
+            let display = document.getElementById('code-display');
+            if (!display) return;
+
+            let html = [];
+
+            // STEP 0: Menggetik <table>
+            if (step === 0) {
+                let fullText = '<table border="1">\n\n</table>';
+                let chars = Math.floor(map(min(animProgress, 1), 0, 1, 0, fullText.length));
+                let typed = fullText.substring(0, chars);
+                display.innerHTML = escapeHtml(typed) + '<span class="cursor"></span>';
+                return;
+            }
+
+            // Tag Buka Table
+            html.push('<span class="tag-table">&lt;table border="1"&gt;</span>');
+
+            // Baris demi baris (<tr>)
+            for (let r = 0; r < rows; r++) {
+                let isRowCreated = false;
+                if (step === 1) {
+                    isRowCreated = (r < curRowLine);
+                } else if (step >= 2) {
+                    isRowCreated = true;
+                }
+
+                if (isRowCreated) {
+                    let isCurrentRow = (step === 1 && r === curRowLine - 1) || (step === 2 && r === curTdRow);
+                    let trTag = isCurrentRow 
+                        ? '<span class="tag-tr highlight-active">&lt;tr&gt;</span>' 
+                        : '<span class="tag-tr">&lt;tr&gt;</span>';
+                    
+                    html.push('  ' + trTag);
+
+                    // Sel (<td>) di dalam baris
+                    if (step >= 2) {
+                        for (let c = 0; c < cols; c++) {
+                            let isTdCreated = (r < curTdRow) || (r === curTdRow && c < curTdCol) || (step === 3);
+                            let isCurrentTd = (step === 2 && r === curTdRow && c === curTdCol - 1);
+
+                            if (isTdCreated) {
+                                let tdContent = isCurrentTd
+                                    ? '<span class="tag-td highlight-active">&lt;td&gt;Data&lt;/td&gt;</span>'
+                                    : '<span class="tag-td">&lt;td&gt;Data&lt;/td&gt;</span>';
+                                html.push('    ' + tdContent);
+                            }
+                        }
+                    }
+
+                    let trClose = isCurrentRow 
+                        ? '<span class="tag-tr highlight-active">&lt;/tr&gt;</span>' 
+                        : '<span class="tag-tr">&lt;/tr&gt;</span>';
+                    html.push('  ' + trClose);
+                }
+            }
+
+            // Tag Tutup Table
+            html.push('<span class="tag-table">&lt;/table&gt;</span>');
+
+            let cursor = (step < 3) ? ' <span class="cursor"></span>' : '';
+            display.innerHTML = html.join('\n') + cursor;
+        }
+
+        function escapeHtml(str) {
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+        }
+    </script>
+</body>
+
+</html>
