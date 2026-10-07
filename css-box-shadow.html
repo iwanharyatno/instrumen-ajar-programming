@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Visualizer: Box-Shadow CSS</title>
+    
+    <!-- Alpine.js untuk Reaktivitas Interaktif -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
+            min-height: 100vh;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(to right, #818cf8, #c084fc, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        header p {
+            color: #94a3b8;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        /* Container Utama */
+        .playground {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .playground {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Panel Preview Box */
+        .preview-panel {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 320px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .target-box {
+            width: 160px;
+            height: 160px;
+            background-color: #6366f1;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: #ffffff;
+            transition: background-color 0.2s;
+        }
+
+        /* Panel Kontrol Slider */
+        .controls-panel {
+            background-color: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #cbd5e1;
+        }
+
+        .control-label span.val {
+            color: #38bdf8;
+            font-family: 'Fira Code', monospace;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            accent-color: #818cf8;
+            cursor: pointer;
+        }
+
+        /* Options Toggle */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+            cursor: pointer;
+        }
+
+        .checkbox-group input {
+            width: 16px;
+            height: 16px;
+            accent-color: #818cf8;
+            cursor: pointer;
+        }
+
+        /* Live Code Output */
+        .code-panel {
+            max-width: 1000px;
+            margin: 0 auto;
+            width: 100%;
+            background-color: #020617;
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .code-text {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.95rem;
+            color: #38bdf8;
+        }
+
+        .btn-copy {
+            background-color: #334155;
+            color: #f8fafc;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-copy:hover {
+            background-color: #475569;
+        }
+    </style>
+</head>
+<body x-data="{
+    offsetX: 10,
+    offsetY: 10,
+    blur: 15,
+    spread: 0,
+    color: '#000000',
+    opacity: 40,
+    inset: false,
+    
+    get shadowCSS() {
+        let hexOpacity = Math.round((this.opacity / 100) * 255).toString(16).padStart(2, '0');
+        let fullColor = this.color + hexOpacity;
+        let insetStr = this.inset ? 'inset ' : '';
+        return `${insetStr}${this.offsetX}px ${this.offsetY}px ${this.blur}px ${this.spread}px ${fullColor}`;
+    }
+}">
+
+    <header>
+        <h1>Box-Shadow Property Visualizer</h1>
+        <p>Instrumen Demo Interaktif Pertemuan 2: Box Model & Bayangan</p>
+    </header>
+
+    <div class="playground">
+        <!-- Area Preview -->
+        <div class="preview-panel">
+            <div class="target-box" :style="{ boxShadow: shadowCSS }">
+                TARGET BOX
+            </div>
+        </div>
+
+        <!-- Panel Kontrol Parameter -->
+        <div class="controls-panel">
+            <!-- Offset X -->
+            <div class="control-group">
+                <div class="control-label">
+                    <label>1. Offset-X (Arah Horizontal)</label>
+                    <span class="val" x-text="offsetX + 'px'"></span>
+                </div>
+                <input type="range" min="-50" max="50" x-model="offsetX">
+            </div>
+
+            <!-- Offset Y -->
+            <div class="control-group">
+                <div class="control-label">
+                    <label>2. Offset-Y (Arah Vertikal)</label>
+                    <span class="val" x-text="offsetY + 'px'"></span>
+                </div>
+                <input type="range" min="-50" max="50" x-model="offsetY">
+            </div>
+
+            <!-- Blur Radius -->
+            <div class="control-group">
+                <div class="control-label">
+                    <label>3. Blur Radius (Kerapuhan Bayangan)</label>
+                    <span class="val" x-text="blur + 'px'"></span>
+                </div>
+                <input type="range" min="0" max="60" x-model="blur">
+            </div>
+
+            <!-- Spread Radius -->
+            <div class="control-group">
+                <div class="control-label">
+                    <label>4. Spread Radius (Ukuran/Pengembangan)</label>
+                    <span class="val" x-text="spread + 'px'"></span>
+                </div>
+                <input type="range" min="-30" max="40" x-model="spread">
+            </div>
+
+            <!-- Transparency / Opacity -->
+            <div class="control-group">
+                <div class="control-label">
+                    <label>5. Opacity Warna Bayangan</label>
+                    <span class="val" x-text="opacity + '%'"></span>
+                </div>
+                <input type="range" min="0" max="100" x-model="opacity">
+            </div>
+
+            <!-- Inset Option -->
+            <label class="checkbox-group">
+                <input type="checkbox" x-model="inset">
+                <span style="font-size: 0.88rem; font-weight: 600; color: #cbd5e1;">Gunakan Inset (Bayangan ke Dalam)</span>
+            </label>
+        </div>
+    </div>
+
+    <!-- Output Kode CSS -->
+    <div class="code-panel">
+        <div class="code-text">
+            box-shadow: <span x-text="shadowCSS"></span>;
+        </div>
+        <button class="btn-copy" @click="navigator.clipboard.writeText('box-shadow: ' + shadowCSS + ';'); alert('Kode CSS berhasil disalin!')">
+            Salin CSS
+        </button>
+    </div>
+
+</body>
+</html>
