@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Visualizer: CSS Background & Gradient</title>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@500&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8" x-data="{
+    activeTab: 'image', // 'image', 'linear', 'radial'
+    
+    // 1. Background Image Properties
+    imgUrl: 'gambar/foggy-castle.jpg',
+    imgSize: 'cover',
+    customSizePx: 200,
+    imgRepeat: 'no-repeat',
+    imgPosition: 'center',
+    
+    // 2. Linear Gradient Properties
+    linearDegree: 135,
+    linearStops: [
+        { color: '#6366f1', percent: 0 },
+        { color: '#a855f7', percent: 50 },
+        { color: '#ec4899', percent: 100 }
+    ],
+    
+    // 3. Radial Gradient Properties
+    radialShape: 'circle',
+    radialPosition: 'center',
+    radialStops: [
+        { color: '#38bdf8', percent: 0 },
+        { color: '#1e1b4b', percent: 70 },
+        { color: '#0f172a', percent: 100 }
+    ],
+
+    // Helper Functions untuk Color List
+    addColorStop(type) {
+        if (type === 'linear') {
+            this.linearStops.push({ color: '#f59e0b', percent: 100 });
+        } else {
+            this.radialStops.push({ color: '#10b981', percent: 100 });
+        }
+    },
+    removeColorStop(type, index) {
+        if (type === 'linear' && this.linearStops.length > 2) {
+            this.linearStops.splice(index, 1);
+        } else if (type === 'radial' && this.radialStops.length > 2) {
+            this.radialStops.splice(index, 1);
+        }
+    },
+
+    // Dynamic Getter CSS Output
+    get generatedCSS() {
+        if (this.activeTab === 'image') {
+            let sz = this.imgSize === 'custom' ? `${this.customSizePx}px ${this.customSizePx}px` : this.imgSize;
+            return `background-image: url('${this.imgUrl}');\nbackground-size: ${sz};\nbackground-repeat: ${this.imgRepeat};\nbackground-position: ${this.imgPosition};`;
+        } else if (this.activeTab === 'linear') {
+            let stops = this.linearStops.map(s => `${s.color} ${s.percent}%`).join(', ');
+            return `background-image: linear-gradient(${this.linearDegree}deg, ${stops});`;
+        } else {
+            let stops = this.radialStops.map(s => `${s.color} ${s.percent}%`).join(', ');
+            return `background-image: radial-gradient(${this.radialShape} at ${this.radialPosition}, ${stops});`;
+        }
+    },
+
+    get previewStyle() {
+        if (this.activeTab === 'image') {
+            let sz = this.imgSize === 'custom' ? `${this.customSizePx}px ${this.customSizePx}px` : this.imgSize;
+            return {
+                backgroundImage: `url('${this.imgUrl}')`,
+                backgroundSize: sz,
+                backgroundRepeat: this.imgRepeat,
+                backgroundPosition: this.imgPosition
+            };
+        } else if (this.activeTab === 'linear') {
+            let stops = this.linearStops.map(s => `${s.color} ${s.percent}%`).join(', ');
+            return { backgroundImage: `linear-gradient(${this.linearDegree}deg, ${stops})` };
+        } else {
+            let stops = this.radialStops.map(s => `${s.color} ${s.percent}%`).join(', ');
+            return { backgroundImage: `radial-gradient(${this.radialShape} at ${this.radialPosition}, ${stops})` };
+        }
+    }
+}">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl"></div>
+            <h1 class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                CSS Background & Gradient Visualizer
+            </h1>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">
+                Instrumen Demo Interaktif Pertemuan 3: Background Image, Linear Gradient, & Radial Gradient
+            </p>
+            
+            <!-- Navigation Tabs -->
+            <div class="flex justify-center gap-2 mt-6">
+                <button @click="activeTab = 'image'" :class="activeTab === 'image' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                    🖼️ Background Image
+                </button>
+                <button @click="activeTab = 'linear'" :class="activeTab === 'linear' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                    📐 Linear Gradient
+                </button>
+                <button @click="activeTab = 'radial'" :class="activeTab === 'radial' ? 'bg-indigo-600 text-white' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'" class="px-4 py-2 rounded-xl text-xs font-bold transition-all">
+                    🎯 Radial Gradient
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Grid Layout -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            
+            <!-- Preview Box -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 flex flex-col justify-between min-h-[380px]">
+                <div class="flex items-center justify-between mb-4">
+                    <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Live Preview Container</span>
+                    <span class="text-[11px] code-font bg-slate-800 text-indigo-400 px-2.5 py-1 rounded-md border border-slate-700" x-text="'Tab: ' + activeTab"></span>
+                </div>
+                
+                <div class="w-full h-72 rounded-xl border-2 border-dashed border-slate-700/80 transition-all duration-300 relative shadow-2xl flex items-center justify-center" :style="previewStyle">
+                    <div class="bg-slate-950/70 backdrop-blur-md px-4 py-2 rounded-lg border border-white/10 text-xs font-semibold text-slate-200 shadow-lg">
+                        Preview Area
+                    </div>
+                </div>
+
+                <div class="mt-4 text-xs text-slate-500 text-center">
+                    Kotak ini berukuran responsif untuk mensimulasikan penerapan properti pada elemen web.
+                </div>
+            </div>
+
+            <!-- Controls Panel -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+                
+                <!-- TAB 1: BACKGROUND IMAGE CONTROLS -->
+                <template x-if="activeTab === 'image'">
+                    <div class="space-y-4">
+                        <h2 class="text-sm font-bold text-indigo-400 border-b border-slate-800 pb-2">Pengaturan Background Image</h2>
+                        
+                        <!-- URL Input -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Image URL</label>
+                            <input type="text" x-model="imgUrl" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs code-font text-indigo-300 focus:outline-none focus:border-indigo-500">
+                        </div>
+
+                        <!-- Size Input -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Background Size</label>
+                            <div class="grid grid-cols-4 gap-2">
+                                <template x-for="sz in ['cover', 'contain', 'auto', 'custom']">
+                                    <button @click="imgSize = sz" :class="imgSize === sz ? 'bg-indigo-600 text-white' : 'bg-slate-950 text-slate-400 border border-slate-800'" class="py-1.5 text-xs rounded-lg font-medium capitalize" x-text="sz"></button>
+                                </template>
+                            </div>
+                            <template x-if="imgSize === 'custom'">
+                                <div class="mt-2 flex items-center gap-3">
+                                    <input type="range" min="50" max="400" x-model="customSizePx" class="w-full accent-indigo-500">
+                                    <span class="text-xs code-font text-indigo-400 w-16 text-right" x-text="customSizePx + 'px'"></span>
+                                </div>
+                            </template>
+                        </div>
+
+                        <!-- Repeat Input -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Background Repeat</label>
+                            <select x-model="imgRepeat" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                                <option value="no-repeat">no-repeat</option>
+                                <option value="repeat">repeat</option>
+                                <option value="repeat-x">repeat-x</option>
+                                <option value="repeat-y">repeat-y</option>
+                            </select>
+                        </div>
+
+                        <!-- Position Input -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-300 mb-1">Background Position</label>
+                            <select x-model="imgPosition" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-indigo-500">
+                                <option value="center">center</option>
+                                <option value="top left">top left</option>
+                                <option value="top right">top right</option>
+                                <option value="bottom left">bottom left</option>
+                                <option value="bottom right">bottom right</option>
+                            </select>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- TAB 2: LINEAR GRADIENT CONTROLS -->
+                <template x-if="activeTab === 'linear'">
+                    <div class="space-y-4">
+                        <h2 class="text-sm font-bold text-indigo-400 border-b border-slate-800 pb-2">Pengaturan Linear Gradient</h2>
+                        
+                        <!-- Degree Slider -->
+                        <div>
+                            <div class="flex justify-between text-xs font-semibold mb-1">
+                                <span class="text-slate-300">Sudut (Degree)</span>
+                                <span class="code-font text-indigo-400" x-text="linearDegree + 'deg'"></span>
+                            </div>
+                            <input type="range" min="0" max="360" x-model="linearDegree" class="w-full accent-indigo-500">
+                        </div>
+
+                        <!-- Dynamic Color Stops -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs font-semibold text-slate-300">Daftar Warna & Persentase</label>
+                                <button @click="addColorStop('linear')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 px-2.5 py-1 rounded-md text-white font-medium">
+                                    + Tambah Warna
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                <template x-for="(stop, index) in linearStops" :key="index">
+                                    <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                                        <input type="color" x-model="stop.color" class="w-7 h-7 bg-transparent rounded cursor-pointer border-0">
+                                        <input type="range" min="0" max="100" x-model="stop.percent" class="w-full accent-indigo-500">
+                                        <span class="text-xs code-font text-indigo-400 w-12 text-right" x-text="stop.percent + '%'"></span>
+                                        <button @click="removeColorStop('linear', index)" x-show="linearStops.length > 2" class="text-rose-400 hover:text-rose-300 text-xs px-1">✕</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- TAB 3: RADIAL GRADIENT CONTROLS -->
+                <template x-if="activeTab === 'radial'">
+                    <div class="space-y-4">
+                        <h2 class="text-sm font-bold text-indigo-400 border-b border-slate-800 pb-2">Pengaturan Radial Gradient</h2>
+                        
+                        <!-- Shape & Position -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Bentuk (Shape)</label>
+                                <select x-model="radialShape" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
+                                    <option value="circle">circle</option>
+                                    <option value="ellipse">ellipse</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-300 mb-1">Posisi Pusat</label>
+                                <select x-model="radialPosition" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-xs text-slate-200 focus:outline-none">
+                                    <option value="center">center</option>
+                                    <option value="top">top</option>
+                                    <option value="bottom">bottom</option>
+                                    <option value="left">left</option>
+                                    <option value="right">right</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Color Stops -->
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs font-semibold text-slate-300">Daftar Warna & Persentase</label>
+                                <button @click="addColorStop('radial')" class="text-[11px] bg-indigo-600 hover:bg-indigo-500 px-2.5 py-1 rounded-md text-white font-medium">
+                                    + Tambah Warna
+                                </button>
+                            </div>
+                            
+                            <div class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                                <template x-for="(stop, index) in radialStops" :key="index">
+                                    <div class="flex items-center gap-2 bg-slate-950 p-2 rounded-lg border border-slate-800">
+                                        <input type="color" x-model="stop.color" class="w-7 h-7 bg-transparent rounded cursor-pointer border-0">
+                                        <input type="range" min="0" max="100" x-model="stop.percent" class="w-full accent-indigo-500">
+                                        <span class="text-xs code-font text-indigo-400 w-12 text-right" x-text="stop.percent + '%'"></span>
+                                        <button @click="removeColorStop('radial', index)" x-show="radialStops.length > 2" class="text-rose-400 hover:text-rose-300 text-xs px-1">✕</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+
+        <!-- Live Code Output -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col md:flex-row items-center justify-between gap-4">
+            <div class="w-full overflow-x-auto">
+                <span class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Generated CSS Code:</span>
+                <pre class="code-font text-xs text-sky-300 whitespace-pre" x-text="generatedCSS"></pre>
+            </div>
+            <button @click="navigator.clipboard.writeText(generatedCSS); alert('Kode CSS berhasil disalin!')" class="w-full md:w-auto bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-5 py-2.5 rounded-xl text-xs font-bold shrink-0 transition-all">
+                📋 Salin CSS
+            </button>
+        </div>
+
+    </div>
+
+</body>
+</html>
