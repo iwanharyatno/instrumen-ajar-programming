@@ -119,17 +119,40 @@
             <main class="space-y-4 sm:space-y-6">
                 
                 <!-- Soal & Target Card -->
-                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-3">
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-4">
+                    <!-- Header Soal -->
                     <div class="flex items-center justify-between gap-2">
                         <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-md" x-text="currentQuestion.title"></span>
                         <span class="text-xs text-slate-500 font-mono" x-text="`ID: #${currentQuestion.id}`"></span>
                     </div>
                     
+                    <!-- Deskripsi Soal -->
                     <h2 class="text-base sm:text-lg font-bold text-slate-100" x-text="currentQuestion.description"></h2>
                     
-                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm text-slate-300 flex items-start gap-3">
-                        <span class="text-indigo-400 font-bold shrink-0">🎯 Goal:</span>
-                        <div class="text-emerald-400 font-medium break-all" x-text="currentQuestion.targetSyntax"></div>
+                    <!-- Dynamic Style Injection untuk Preview -->
+                    <template x-if="currentQuestion.preview">
+                        <style x-text="currentQuestion.preview.css"></style>
+                    </template>
+
+                    <!-- Grid Container Side-by-Side (Target Code & Preview Result) -->
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                        
+                        <!-- Side 1: Target Code -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm text-slate-300 flex flex-col justify-start gap-2">
+                            <div class="text-indigo-400 font-bold shrink-0 flex items-center gap-1.5">
+                                <span>🎯</span> Target Code:
+                            </div>
+                            <div class="text-emerald-400 font-medium break-all bg-slate-900/60 p-2.5 rounded-lg border border-slate-800/80" x-html="currentQuestion.targetSyntax"></div>
+                        </div>
+
+                        <!-- Side 2: Live Preview Result -->
+                        <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 text-xs sm:text-sm flex flex-col justify-start gap-2 overflow-hidden">
+                            <div class="text-pink-400 font-bold shrink-0 flex items-center gap-1.5">
+                                <span>👁️</span> Expected Preview:
+                            </div>
+                            <div class="bg-slate-900/60 p-3 rounded-lg border border-slate-800/80 min-h-[60px] overflow-x-auto w-full" x-html="currentQuestion.preview.html"></div>
+                        </div>
+
                     </div>
                 </div>
 
@@ -324,46 +347,66 @@
                         id: 1,
                         title: "Soal 1: Custom Bullet Square",
                         description: "Menghilangkan bullet standar pada list navigasi dan mengubah tipe penanda menjadi bentuk kotak (square).",
-                        targetSyntax: "ul.menu { list-style-type: square; }",
+                        targetSyntax: "ul.menu {<br>&nbsp;&nbsp;&nbsp;&nbsp;list-style-type: square;<br>}",
                         correctBlocks: ["ul.menu", "{", "list-style-type", ":", "square", ";", "}"],
                         distractorBlocks: ["list-style-image", "disc", "circle"],
-                        explanation: "Sintaks yang tepat menggunakan selector 'ul.menu', diikuti properti 'list-style-type' dengan nilai 'square'."
+                        explanation: "Sintaks yang tepat menggunakan selector 'ul.menu', diikuti properti 'list-style-type' dengan nilai 'square'.",
+                        preview: {
+                            css: "ul.menu { list-style-type: square; padding-left: 20px; color: #cbd5e1; }",
+                            html: "<ul class='menu'><li>Home</li><li>Profile</li><li>Contact</li></ul>"
+                        }
                     },
                     {
                         id: 2,
                         title: "Soal 2: List Lower-Alpha",
                         description: "Mengubah nomor daftar berurutan (<ol>) menjadi urutan huruf kecil (a, b, c).",
-                        targetSyntax: "ol { list-style-type: lower-alpha; }",
+                        targetSyntax: "ol {<br>&nbsp;&nbsp;&nbsp;&nbsp;list-style-type: lower-alpha;<br>}",
                         correctBlocks: ["ol", "{", "list-style-type", ":", "lower-alpha", ";", "}"],
                         distractorBlocks: ["lower-roman", "upper-alpha", "decimal"],
-                        explanation: "Properti 'list-style-type: lower-alpha;' digunakan untuk mengubah format angka <ol> menjadi huruf abjad kecil."
+                        explanation: "Properti 'list-style-type: lower-alpha;' digunakan untuk mengubah format angka <ol> menjadi huruf abjad kecil.",
+                        preview: {
+                            css: "ol.preview-alpha { list-style-type: lower-alpha; padding-left: 20px; color: #cbd5e1; }",
+                            html: "<ol class='preview-alpha'><li>Langkah Pertama</li><li>Langkah Kedua</li><li>Langkah Ketiga</li></ol>"
+                        }
                     },
                     {
                         id: 3,
                         title: "Soal 3: Reset Bullet Navigation",
                         description: "Menghilangkan seluruh bullet point pada list di dalam navigasi untuk membuat menu bar horizontal.",
-                        targetSyntax: "nav ul { list-style: none; }",
+                        targetSyntax: "nav ul {<br>&nbsp;&nbsp;&nbsp;&nbsp;list-style: none;<br>}",
                         correctBlocks: ["nav ul", "{", "list-style", ":", "none", ";", "}"],
                         distractorBlocks: ["hidden", "list-style-type: zero", "text-decoration: none"],
-                        explanation: "Shorthand 'list-style: none;' biasa digunakan untuk menghapus penanda bullet bawaan pada menu navigasi."
+                        explanation: "Shorthand 'list-style: none;' biasa digunakan untuk menghapus penanda bullet bawaan pada menu navigasi.",
+                        preview: {
+                            css: "nav.preview-nav ul { list-style: none; display: flex; gap: 12px; padding: 0; margin: 0; } nav.preview-nav a { color: #818cf8; text-decoration: none; font-weight: 600; }",
+                            html: "<nav class='preview-nav'><ul><li><a href='#'>Dashboard</a></li><li><a href='#'>Modul</a></li><li><a href='#'>Kuis</a></li></ul></nav>"
+                        }
                     },
                     {
                         id: 4,
                         title: "Soal 4: Table Border Collapse",
                         description: "Menggabungkan garis ganda terpisah pada tabel menjadi satu garis tunggal menyatu.",
-                        targetSyntax: "table { border-collapse: collapse; }",
+                        targetSyntax: "table {<br>&nbsp;&nbsp;&nbsp;&nbsp;border-collapse: collapse;<br>}",
                         correctBlocks: ["table", "{", "border-collapse", ":", "collapse", ";", "}"],
                         distractorBlocks: ["border-spacing", "separate", "border-style"],
-                        explanation: "Properti 'border-collapse: collapse;' pada tag <table> menghilangkan jarak sel terpisah dan menggabungkannya."
+                        explanation: "Properti 'border-collapse: collapse;' pada tag <table> menghilangkan jarak sel terpisah dan menggabungkannya.",
+                        preview: {
+                            css: "table.preview-collapse { border-collapse: collapse; width: 100%; border: 1px solid #475569; } table.preview-collapse td, table.preview-collapse th { border: 1px solid #475569; padding: 6px; text-align: center; color: #cbd5e1; }",
+                            html: "<table class='preview-collapse'><tr><th>No</th><th>Siswa</th></tr><tr><td>1</td><td>Iwan</td></tr></table>"
+                        }
                     },
                     {
                         id: 5,
                         title: "Soal 5: Table Cell Padding & Border",
                         description: "Memberikan ruang dalam sel tabel (th & td) sebesar 12px dan border solid 1px slate.",
-                        targetSyntax: "th, td { padding: 12px; border: 1px solid #334155; }",
+                        targetSyntax: "th, td {<br>&nbsp;&nbsp;&nbsp;&nbsp;padding: 12px;<br>&nbsp;&nbsp;&nbsp;&nbsp;border: 1px solid #334155;<br>}",
                         correctBlocks: ["th, td", "{", "padding", ":", "12px", ";", "border", ":", "1px solid #334155", ";", "}"],
                         distractorBlocks: ["margin: 12px", "border-width: 1px", "table-padding"],
-                        explanation: "Gunakan 'th, td' untuk menargetkan sel, 'padding' untuk memberi ruang dalam, dan 'border' untuk memberi garis sel."
+                        explanation: "Gunakan 'th, td' untuk menargetkan sel, 'padding' untuk memberi ruang dalam, dan 'border' untuk memberi garis sel.",
+                        preview: {
+                            css: ".preview-padding th, .preview-padding td { padding: 12px; border: 1px solid #334155; color: #cbd5e1; text-align: left; } .preview-padding table { border-collapse: collapse; width: 100%; }",
+                            html: "<div class='preview-padding'><table><tr><th>Materi</th><th>Status</th></tr><tr><td>CSS Table</td><td>Selesai</td></tr></table></div>"
+                        }
                     }
                 ],
 
