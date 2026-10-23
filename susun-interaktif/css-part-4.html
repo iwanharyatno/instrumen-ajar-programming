@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code Syntax Puzzle - Pertemuan 4 CSS</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Alpine.js CDN -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+        .code-font {
+            font-family: 'Fira Code', monospace;
+        }
+        /* Custom scrollbar for blocks palette */
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 6px;
+            width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #0f172a;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between p-3 sm:p-6 md:p-8"
+      x-data="quizApp()"
+      x-init="initQuiz()">
+
+    <div class="max-w-4xl mx-auto w-full space-y-4 sm:space-y-6">
+        
+        <!-- Header & Navigasi -->
+        <header class="bg-slate-900 border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-36 h-36 bg-indigo-600/20 rounded-full blur-3xl"></div>
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 relative z-10">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2.5 py-0.5 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 rounded-full text-[11px] font-semibold">
+                            Ekskul Pemrograman • SMP IT Al-Irsyad
+                        </span>
+                        <span class="px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 rounded-full text-[11px] font-semibold">
+                            Pertemuan 4 CSS
+                        </span>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                        🧩 Code Syntax Puzzle
+                    </h1>
+                    <p class="text-xs text-slate-400 mt-0.5">
+                        Susun potongan sintaks CSS list-style & table styling dengan urutan yang tepat!
+                    </p>
+                </div>
+
+                <!-- Progress Tracker Badge -->
+                <div x-show="gameState !== 'start' && gameState !== 'recap'" class="flex items-center gap-3 bg-slate-950/80 border border-slate-800 px-4 py-2 rounded-xl self-start sm:self-auto">
+                    <div class="text-right">
+                        <div class="text-[10px] text-slate-400 uppercase font-bold tracking-wider">Level Progress</div>
+                        <div class="text-sm font-extrabold text-indigo-400" x-text="`Soal ${currentIndex + 1} / ${quizQuestions.length}`"></div>
+                    </div>
+                    <div class="w-10 h-10 rounded-lg bg-indigo-600/20 border border-indigo-500/40 flex items-center justify-center font-black text-indigo-300 text-sm"
+                         x-text="`${Math.round(((currentIndex + 1) / quizQuestions.length) * 100)}%`">
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN SCREEN 1: START SCREEN -->
+        <template x-if="gameState === 'start'">
+            <main class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-10 text-center space-y-6 shadow-xl">
+                <div class="w-20 h-20 bg-indigo-500/10 border border-indigo-500/30 rounded-3xl flex items-center justify-center text-4xl mx-auto shadow-inner">
+                    💻
+                </div>
+                <div class="max-w-lg mx-auto space-y-2">
+                    <h2 class="text-2xl font-bold text-slate-100">Kuis Tantangan Sintaks CSS</h2>
+                    <p class="text-xs sm:text-sm text-slate-400 leading-relaxed">
+                        Uji pemahamanmu seputar <code class="text-indigo-300 font-mono">list-style-type</code>, <code class="text-indigo-300 font-mono">list-style</code>, <code class="text-indigo-300 font-mono">border-collapse</code>, dan <code class="text-indigo-300 font-mono">padding</code> tabel.
+                    </p>
+                </div>
+
+                <!-- Rules Box -->
+                <div class="bg-slate-950 border border-slate-800/80 rounded-xl p-4 max-w-md mx-auto text-left text-xs space-y-2">
+                    <div class="font-bold text-indigo-400 flex items-center gap-1.5">
+                        <span>💡</span>
+                        <span>Aturan & Cara Bermain:</span>
+                    </div>
+                    <ul class="list-disc list-inside text-slate-300 space-y-1 pl-1">
+                        <li>Terdapat <strong>5 Level Soal</strong> tantangan menyusun sintaks.</li>
+                        <li><strong>Drag & Drop</strong> atau <strong>Klik</strong> blok kode untuk memasukkannya ke slot drop zone.</li>
+                        <li>Waspada! Ada beberapa <strong>blok pengecoh (distractors)</strong> yang salah.</li>
+                        <li>Diperbolehkan melakukan pengerjaan ulang (retry) jika salah.</li>
+                    </ul>
+                </div>
+
+                <button @click="startQuiz()" class="w-full sm:w-auto px-8 py-3.5 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-extrabold rounded-xl text-sm shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95">
+                    🚀 Mulai Game Tantangan
+                </button>
+            </main>
+        </template>
+
+        <!-- MAIN SCREEN 2: GAMEPLAY PUZZLE SCREEN -->
+        <template x-if="gameState === 'playing'">
+            <main class="space-y-4 sm:space-y-6">
+                
+                <!-- Soal & Target Card -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider bg-indigo-500/10 border border-indigo-500/20 px-3 py-1 rounded-md" x-text="currentQuestion.title"></span>
+                        <span class="text-xs text-slate-500 font-mono" x-text="`ID: #${currentQuestion.id}`"></span>
+                    </div>
+                    
+                    <h2 class="text-base sm:text-lg font-bold text-slate-100" x-text="currentQuestion.description"></h2>
+                    
+                    <div class="bg-slate-950 border border-slate-800 rounded-xl p-3 sm:p-4 font-mono text-xs sm:text-sm text-slate-300 flex items-start gap-3">
+                        <span class="text-indigo-400 font-bold shrink-0">🎯 Goal:</span>
+                        <div class="text-emerald-400 font-medium break-all" x-text="currentQuestion.targetSyntax"></div>
+                    </div>
+                </div>
+
+                <!-- Drop Zone / Assembly Slot Container -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-slate-300 flex items-center gap-2">
+                            <span>📥</span>
+                            <span>Drop Zone (Susun Kode Di Sini):</span>
+                        </label>
+                        <button x-show="userSlots.length > 0 && !isChecked"
+                                @click="resetCurrentSlots()"
+                                class="text-[11px] text-rose-400 hover:text-rose-300 font-semibold underline transition-colors">
+                            Bersihkan Slot
+                        </button>
+                    </div>
+
+                    <!-- Drop Target Area -->
+                    <div class="min-h-[96px] bg-slate-950 border-2 border-dashed rounded-xl p-3 sm:p-4 flex flex-wrap items-center gap-2 sm:gap-2.5 transition-colors custom-scrollbar"
+                         :class="{
+                            'border-slate-800': !isChecked,
+                            'border-emerald-500/60 bg-emerald-950/20': isChecked && isCorrect,
+                            'border-rose-500/60 bg-rose-950/20': isChecked && !isCorrect
+                         }"
+                         @dragover.prevent
+                         @drop.prevent="handleDropToZone()">
+                        
+                        <!-- Empty State Indicator -->
+                        <template x-if="userSlots.length === 0">
+                            <div class="w-full text-center py-4 text-xs text-slate-600 italic select-none">
+                                Drag & drop atau klik blok dari palet di bawah untuk memasukkan ke sini...
+                            </div>
+                        </template>
+
+                        <!-- Slotted Code Blocks -->
+                        <template x-for="(block, index) in userSlots" :key="'slot-' + index">
+                            <div class="group relative code-font text-xs sm:text-sm font-semibold bg-indigo-950/80 text-indigo-200 border border-indigo-500/40 px-3 py-2 rounded-lg shadow-md cursor-pointer flex items-center gap-2 hover:border-indigo-400 transition-all transform hover:-translate-y-0.5"
+                                 @click="removeFromSlot(index)">
+                                <span x-text="block"></span>
+                                <span class="text-[10px] text-indigo-400 group-hover:text-rose-400 font-bold transition-colors">✕</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- Feedback Alert Message -->
+                    <template x-if="isChecked">
+                        <div class="p-4 rounded-xl text-xs sm:text-sm border transition-all animate-fade-in"
+                             :class="isCorrect ? 'bg-emerald-950/50 border-emerald-500/40 text-emerald-200' : 'bg-rose-950/50 border-rose-500/40 text-rose-200'">
+                            <div class="flex items-start gap-2.5">
+                                <span class="text-lg" x-text="isCorrect ? '🎉' : '❌'"></span>
+                                <div class="space-y-1">
+                                    <div class="font-bold text-sm" x-text="isCorrect ? 'Sempurna! Sintaks Benar Presisi!' : 'Ups! Urutan/Pilihan Sintaks Masih Keliru'"></div>
+                                    <p class="leading-relaxed text-xs opacity-90" x-text="currentQuestion.explanation"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Palette / Draggable Code Blocks -->
+                <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 sm:p-6 shadow-xl space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="text-xs font-bold text-slate-300 flex items-center gap-2">
+                            <span>📦</span>
+                            <span>Pilihan Potongan Kode (Klik atau Drag):</span>
+                        </label>
+                        <span class="text-[11px] text-slate-500 font-mono" x-text="`${availablePalette.length} Blok Tersedia`"></span>
+                    </div>
+
+                    <!-- Palette Items Grid -->
+                    <div class="flex flex-wrap gap-2 sm:gap-2.5 min-h-[72px] p-1">
+                        <template x-for="(block, index) in availablePalette" :key="'palette-' + index">
+                            <div draggable="true"
+                                 @dragstart="handleDragStart(block)"
+                                 @click="addToSlot(block)"
+                                 class="code-font text-xs sm:text-sm font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-indigo-400 px-3 py-2 rounded-lg cursor-grab active:cursor-grabbing shadow-sm transition-all transform hover:-translate-y-0.5 active:scale-95 select-none">
+                                <span x-text="block"></span>
+                            </div>
+                        </template>
+
+                        <template x-if="availablePalette.length === 0">
+                            <div class="text-xs text-slate-500 italic py-3">
+                                Semua blok telah dimasukkan ke dalam Drop Zone di atas.
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Bottom Action Controls -->
+                <div class="flex items-center justify-between gap-3 pt-2">
+                    <button @click="resetQuizState()" class="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold border border-slate-700 transition-all">
+                        🔄 Ulangi Soal Ini
+                    </button>
+
+                    <div>
+                        <template x-if="!isChecked">
+                            <button @click="checkAnswer()"
+                                    :disabled="userSlots.length === 0"
+                                    :class="userSlots.length === 0 ? 'opacity-50 cursor-not-allowed bg-slate-800 text-slate-500' : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-indigo-600/30 hover:scale-105 active:scale-95'"
+                                    class="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold shadow-lg transition-all">
+                                Periksa Jawaban ✓
+                            </button>
+                        </template>
+
+                        <template x-if="isChecked">
+                            <button @click="nextQuestion()"
+                                    class="px-6 py-2.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold rounded-xl text-xs sm:text-sm shadow-lg shadow-emerald-600/30 transition-all hover:scale-105 active:scale-95">
+                                <span x-text="currentIndex < quizQuestions.length - 1 ? 'Lanjut Soal Berikutnya ➔' : 'Lihat Rekapitulasi Hasil 🏆'"></span>
+                            </button>
+                        </template>
+                    </div>
+                </div>
+
+            </main>
+        </template>
+
+        <!-- MAIN SCREEN 3: FINAL RECAP SCREEN -->
+        <template x-if="gameState === 'recap'">
+            <main class="bg-slate-900 border border-slate-800 rounded-2xl p-6 sm:p-10 text-center space-y-6 shadow-2xl">
+                
+                <div class="w-20 h-20 rounded-full bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-4xl mx-auto shadow-inner">
+                    <span x-text="score >= 80 ? '🏆' : (score >= 60 ? '⭐' : '💪')"></span>
+                </div>
+
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-black text-slate-100">Rekapitulasi Skor Hasil Kuis</h2>
+                    <p class="text-xs text-slate-400">Selamat! Kamu telah menyelesaikan seluruh level Puzzle Sintaks CSS.</p>
+                </div>
+
+                <!-- Final Score Big Display -->
+                <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 max-w-xs mx-auto space-y-2">
+                    <div class="text-xs uppercase font-bold text-slate-500 tracking-wider">Skor Akhir Kamu</div>
+                    <div class="text-5xl font-black bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent" x-text="score"></div>
+                    <div class="text-xs font-bold text-emerald-400" x-text="`${correctCount} dari ${quizQuestions.length} Soal Dijawab Tepat Percobaan Pertama!`"></div>
+                </div>
+
+                <!-- Detailed Level Recap List -->
+                <div class="text-left space-y-3 max-w-xl mx-auto">
+                    <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Rincian Performa Level:</h3>
+                    <div class="space-y-2">
+                        <template x-for="(res, idx) in quizResults" :key="'res-' + idx">
+                            <div class="bg-slate-950 border border-slate-800 p-3 rounded-xl flex items-center justify-between text-xs">
+                                <div class="flex items-center gap-2.5">
+                                    <span class="w-6 h-6 rounded-md flex items-center justify-center font-bold text-[11px]"
+                                          :class="res.isCorrect ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border border-rose-500/30'"
+                                          x-text="idx + 1"></span>
+                                    <span class="font-medium text-slate-300" x-text="res.title"></span>
+                                </div>
+                                <span class="font-bold text-[11px] px-2.5 py-0.5 rounded-full"
+                                      :class="res.isCorrect ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'"
+                                      x-text="res.isCorrect ? 'Benar (+20)' : 'Perlu Latihan (0)'">
+                                </span>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Action Button -->
+                <button @click="startQuiz()" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold rounded-xl text-sm shadow-lg shadow-indigo-600/30 transition-all hover:scale-105 active:scale-95">
+                    🔄 Main Ulang Game
+                </button>
+            </main>
+        </template>
+
+    </div>
+
+    <!-- Footer -->
+    <footer class="text-center text-xs text-slate-600 mt-8 py-4 border-t border-slate-900">
+        Ekskul Pemrograman SMP IT Al-Irsyad • Instrumen Kuis Sintaks CSS Pertemuan 4
+    </footer>
+
+    <!-- Alpine.js Application State & Logic Script -->
+    <script>
+        function quizApp() {
+            return {
+                // Application Game State: 'start', 'playing', 'recap'
+                gameState: 'start',
+                currentIndex: 0,
+                userSlots: [],
+                availablePalette: [],
+                draggedBlock: null,
+                isChecked: false,
+                isCorrect: false,
+                score: 0,
+                correctCount: 0,
+                firstAttempts: [],
+                quizResults: [],
+
+                // Schema Scalable JS Object Array untuk Data Kuis (Easily Editable)
+                quizQuestions: [
+                    {
+                        id: 1,
+                        title: "Soal 1: Custom Bullet Square",
+                        description: "Menghilangkan bullet standar pada list navigasi dan mengubah tipe penanda menjadi bentuk kotak (square).",
+                        targetSyntax: "ul.menu { list-style-type: square; }",
+                        correctBlocks: ["ul.menu", "{", "list-style-type", ":", "square", ";", "}"],
+                        distractorBlocks: ["list-style-image", "disc", "circle"],
+                        explanation: "Sintaks yang tepat menggunakan selector 'ul.menu', diikuti properti 'list-style-type' dengan nilai 'square'."
+                    },
+                    {
+                        id: 2,
+                        title: "Soal 2: List Lower-Alpha",
+                        description: "Mengubah nomor daftar berurutan (<ol>) menjadi urutan huruf kecil (a, b, c).",
+                        targetSyntax: "ol { list-style-type: lower-alpha; }",
+                        correctBlocks: ["ol", "{", "list-style-type", ":", "lower-alpha", ";", "}"],
+                        distractorBlocks: ["lower-roman", "upper-alpha", "decimal"],
+                        explanation: "Properti 'list-style-type: lower-alpha;' digunakan untuk mengubah format angka <ol> menjadi huruf abjad kecil."
+                    },
+                    {
+                        id: 3,
+                        title: "Soal 3: Reset Bullet Navigation",
+                        description: "Menghilangkan seluruh bullet point pada list di dalam navigasi untuk membuat menu bar horizontal.",
+                        targetSyntax: "nav ul { list-style: none; }",
+                        correctBlocks: ["nav ul", "{", "list-style", ":", "none", ";", "}"],
+                        distractorBlocks: ["hidden", "list-style-type: zero", "text-decoration: none"],
+                        explanation: "Shorthand 'list-style: none;' biasa digunakan untuk menghapus penanda bullet bawaan pada menu navigasi."
+                    },
+                    {
+                        id: 4,
+                        title: "Soal 4: Table Border Collapse",
+                        description: "Menggabungkan garis ganda terpisah pada tabel menjadi satu garis tunggal menyatu.",
+                        targetSyntax: "table { border-collapse: collapse; }",
+                        correctBlocks: ["table", "{", "border-collapse", ":", "collapse", ";", "}"],
+                        distractorBlocks: ["border-spacing", "separate", "border-style"],
+                        explanation: "Properti 'border-collapse: collapse;' pada tag <table> menghilangkan jarak sel terpisah dan menggabungkannya."
+                    },
+                    {
+                        id: 5,
+                        title: "Soal 5: Table Cell Padding & Border",
+                        description: "Memberikan ruang dalam sel tabel (th & td) sebesar 12px dan border solid 1px slate.",
+                        targetSyntax: "th, td { padding: 12px; border: 1px solid #334155; }",
+                        correctBlocks: ["th, td", "{", "padding", ":", "12px", ";", "border", ":", "1px solid #334155", ";", "}"],
+                        distractorBlocks: ["margin: 12px", "border-width: 1px", "table-padding"],
+                        explanation: "Gunakan 'th, td' untuk menargetkan sel, 'padding' untuk memberi ruang dalam, dan 'border' untuk memberi garis sel."
+                    }
+                ],
+
+                // Dynamic Getter
+                get currentQuestion() {
+                    return this.quizQuestions[this.currentIndex] || this.quizQuestions[0];
+                },
+
+                // Helper: Shuffle Array (Fisher-Yates)
+                shuffleArray(array) {
+                    let shuffled = [...array];
+                    for (let i = shuffled.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+                    }
+                    return shuffled;
+                },
+
+                initQuiz() {
+                    this.firstAttempts = new Array(this.quizQuestions.length).fill(true);
+                },
+
+                startQuiz() {
+                    this.gameState = 'playing';
+                    this.currentIndex = 0;
+                    this.score = 0;
+                    this.correctCount = 0;
+                    this.firstAttempts = new Array(this.quizQuestions.length).fill(true);
+                    this.quizResults = [];
+                    this.loadLevel();
+                },
+
+                loadLevel() {
+                    this.userSlots = [];
+                    this.isChecked = false;
+                    this.isCorrect = false;
+                    
+                    // Gabungkan blok benar dan pengecoh, lalu acak urutannya
+                    const allBlocks = [
+                        ...this.currentQuestion.correctBlocks,
+                        ...this.currentQuestion.distractorBlocks
+                    ];
+                    this.availablePalette = this.shuffleArray(allBlocks);
+                },
+
+                // Slot Management Logic
+                addToSlot(block) {
+                    if (this.isChecked) return;
+                    this.userSlots.push(block);
+                    const idx = this.availablePalette.indexOf(block);
+                    if (idx > -1) {
+                        this.availablePalette.splice(idx, 1);
+                    }
+                },
+
+                removeFromSlot(index) {
+                    if (this.isChecked) return;
+                    const removed = this.userSlots.splice(index, 1)[0];
+                    this.availablePalette.push(removed);
+                },
+
+                resetCurrentSlots() {
+                    if (this.isChecked) return;
+                    this.availablePalette = [
+                        ...this.availablePalette,
+                        ...this.userSlots
+                    ];
+                    this.userSlots = [];
+                },
+
+                resetQuizState() {
+                    this.loadLevel();
+                },
+
+                // Drag & Drop Handlers
+                handleDragStart(block) {
+                    this.draggedBlock = block;
+                },
+
+                handleDropToZone() {
+                    if (this.draggedBlock) {
+                        this.addToSlot(this.draggedBlock);
+                        this.draggedBlock = null;
+                    }
+                },
+
+                // Validator Jawaban
+                checkAnswer() {
+                    if (this.userSlots.length === 0) return;
+
+                    const userString = this.userSlots.join(' ').trim();
+                    const targetString = this.currentQuestion.correctBlocks.join(' ').trim();
+
+                    this.isChecked = true;
+                    this.isCorrect = (userString === targetString);
+
+                    if (this.isCorrect) {
+                        if (this.firstAttempts[this.currentIndex]) {
+                            this.score += 20;
+                            this.correctCount++;
+                        }
+                    } else {
+                        // Jika salah, percobaan pertama gugur untuk skor sempurna
+                        this.firstAttempts[this.currentIndex] = false;
+                    }
+
+                    // Simpan atau update rekapitulasi hasil
+                    this.quizResults[this.currentIndex] = {
+                        title: this.currentQuestion.title,
+                        isCorrect: this.isCorrect
+                    };
+                },
+
+                nextQuestion() {
+                    if (this.currentIndex < this.quizQuestions.length - 1) {
+                        this.currentIndex++;
+                        this.loadLevel();
+                    } else {
+                        this.gameState = 'recap';
+                    }
+                }
+            }
+        }
+    </script>
+
+</body>
+</html>
