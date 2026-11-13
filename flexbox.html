@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Visualizer: Flexbox Axis & Alignment</title>
+    
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Fira+Code:wght@500;600&display=swap" rel="stylesheet">
+
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .code-font { font-family: 'Fira Code', monospace; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8" x-data="{
+    direction: 'row',
+    justify: 'flex-start',
+    align: 'stretch',
+    gap: 12,
+    showAxes: true,
+    itemCount: 3,
+
+    // Cek apakah sumbu utama sedang horizontal (row / row-reverse)
+    get isRow() {
+        return this.direction.startsWith('row');
+    },
+
+    // Penjelasan dinamis untuk membantu guru menerangkan di depan kelas
+    get axisExplanation() {
+        if (this.direction === 'row') {
+            return 'Main Axis berjalan HORIZONTAL (Kiri ➔ Kanan). justify-content mengatur posisi Kiri-Kanan, sedangkan align-items mengatur Atas-Bawah.';
+        } else if (this.direction === 'row-reverse') {
+            return 'Main Axis berjalan HORIZONTAL TERBALIK (Kanan ➔ Kiri). Titik awal (flex-start) berpindah ke sebelah kanan!';
+        } else if (this.direction === 'column') {
+            return 'Sumbu BERPUTAR 90°! Main Axis sekarang VERTIKAL (Atas ➔ Bawah). justify-content sekarang mengatur Atas-Bawah, dan align-items mengatur Kiri-Kanan.';
+        } else {
+            return 'Main Axis VERTIKAL TERBALIK (Bawah ➔ Atas). Titik awal (flex-start) berpindah ke bagian paling bawah!';
+        }
+    },
+
+    get generatedCSS() {
+        return `.container {\n    display: flex;\n    flex-direction: ${this.direction};\n    justify-content: ${this.justify};\n    align-items: ${this.align};\n    gap: ${this.gap}px;\n}`;
+    }
+}">
+
+    <div class="max-w-6xl mx-auto space-y-6">
+        
+        <!-- Header -->
+        <header class="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center relative overflow-hidden">
+            <div class="absolute -right-10 -top-10 w-40 h-40 bg-indigo-600/20 rounded-full blur-3xl"></div>
+            <h1 class="text-2xl md:text-3xl font-extrabold bg-gradient-to-r from-indigo-400 via-purple-300 to-pink-400 bg-clip-text text-transparent">
+                Flexbox Axis & Alignment Visualizer
+            </h1>
+            <p class="text-xs md:text-sm text-slate-400 mt-1">
+                Instrumen Demo Pertemuan 7: Memahami Hubungan <code class="text-indigo-300">flex-direction</code>, <code class="text-indigo-300">justify-content</code>, & <code class="text-pink-300">align-items</code>
+            </p>
+        </header>
+
+        <!-- Dynamic Insight Banner -->
+        <div class="bg-indigo-950/50 border border-indigo-500/30 rounded-xl p-4 flex items-start gap-3">
+            <span class="text-xl">💡</span>
+            <div class="text-xs md:text-sm text-indigo-200 leading-relaxed">
+                <strong class="text-white block mb-0.5">Konsep Kunci Saat Ini:</strong>
+                <span x-text="axisExplanation"></span>
+            </div>
+        </div>
+
+        <!-- Main Workspace -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            
+            <!-- Left: Interactive Stage (7 Cols) -->
+            <div class="lg:col-span-7 bg-slate-900 border border-slate-800 rounded-2xl p-5 flex flex-col justify-between">
+                
+                <!-- Top Bar Controls on Stage -->
+                <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
+                    <div class="flex items-center gap-3">
+                        <!-- Tambah/Kurang Kotak -->
+                        <div class="flex items-center bg-slate-950 border border-slate-800 rounded-lg overflow-hidden text-xs">
+                            <button @click="if(itemCount > 2) itemCount--" class="px-2.5 py-1 hover:bg-slate-800 text-slate-300 font-bold">-</button>
+                            <span class="px-2 text-slate-400 font-mono" x-text="itemCount + ' Box'"></span>
+                            <button @click="if(itemCount < 5) itemCount++" class="px-2.5 py-1 hover:bg-slate-800 text-slate-300 font-bold">+</button>
+                        </div>
+
+                        <!-- Toggle Axis Overlay -->
+                        <button @click="showAxes = !showAxes" 
+                                :class="showAxes ? 'bg-indigo-600/20 text-indigo-300 border-indigo-500/40' : 'bg-slate-950 text-slate-500 border-slate-800'"
+                                class="px-2.5 py-1 rounded-lg border text-xs font-semibold transition-all">
+                            <span x-text="showAxes ? '👁️ Garis Sumbu: ON' : '🙈 Garis Sumbu: OFF'"></span>
+                        </button>
+                    </div>
+                    
+                    <div class="flex items-center gap-4 text-xs font-semibold">
+                        <span class="flex items-center gap-1.5 text-indigo-400">
+                            <span class="w-3 h-1 bg-indigo-500 inline-block rounded"></span> Main Axis (justify)
+                        </span>
+                        <span class="flex items-center gap-1.5 text-pink-400">
+                            <span class="w-3 h-1 bg-pink-500 inline-block rounded"></span> Cross Axis (align)
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Flex Container Playground -->
+                <div class="relative w-full h-[380px] bg-slate-950 border-2 border-dashed border-slate-700 rounded-xl p-6 overflow-hidden">
+                    
+                    <!-- VISUAL OVERLAY: GARIS SUMBU (AXES) -->
+                    <div x-show="showAxes" x-transition.opacity class="pointer-events-none absolute inset-0 z-0">
+                        
+                        <!-- Sumbu Horizontal (Garis Mendatar di Tengah) -->
+                        <div class="absolute left-3 right-3 top-1/2 -translate-y-1/2 flex items-center"
+                             :class="isRow ? 'text-indigo-500/70' : 'text-pink-500/60'">
+                            <!-- Panah Kiri (jika row-reverse) -->
+                            <span x-show="direction === 'row-reverse'" class="text-lg font-bold leading-none -mr-1">◀</span>
+                            <div class="w-full border-t-2 border-dashed" :class="isRow ? 'border-indigo-500/60' : 'border-pink-500/50'"></div>
+                            <!-- Panah Kanan (jika bukan row-reverse) -->
+                            <span x-show="direction !== 'row-reverse'" class="text-lg font-bold leading-none -ml-1">▶</span>
+                            
+                            <!-- Label Sumbu Horizontal -->
+                            <span class="absolute right-4 -top-6 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900 border"
+                                  :class="isRow ? 'text-indigo-300 border-indigo-500/30' : 'text-pink-300 border-pink-500/30'"
+                                  x-text="isRow ? 'MAIN AXIS (justify-content)' : 'CROSS AXIS (align-items)'">
+                            </span>
+                        </div>
+
+                        <!-- Sumbu Vertikal (Garis Tegak di Tengah) -->
+                        <div class="absolute top-3 bottom-3 left-1/2 -translate-x-1/2 flex flex-col items-center"
+                             :class="!isRow ? 'text-indigo-500/70' : 'text-pink-500/60'">
+                            <!-- Panah Atas (jika column-reverse) -->
+                            <span x-show="direction === 'column-reverse'" class="text-sm font-bold leading-none -mb-1">▲</span>
+                            <div class="h-full border-l-2 border-dashed" :class="!isRow ? 'border-indigo-500/60' : 'border-pink-500/50'"></div>
+                            <!-- Panah Bawah (jika bukan column-reverse) -->
+                            <span x-show="direction !== 'column-reverse'" class="text-sm font-bold leading-none -mt-1">▼</span>
+
+                            <!-- Label Sumbu Vertikal -->
+                            <span class="absolute top-3 left-3 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded bg-slate-900 border whitespace-nowrap"
+                                  :class="!isRow ? 'text-indigo-300 border-indigo-500/30' : 'text-pink-300 border-pink-500/30'"
+                                  x-text="!isRow ? 'MAIN AXIS (justify-content)' : 'CROSS AXIS (align-items)'">
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- ACTUAL FLEXBOX CONTAINER -->
+                    <div class="relative z-10 w-full h-full transition-all duration-300"
+                         :style="{
+                             display: 'flex',
+                             flexDirection: direction,
+                             justifyContent: justify,
+                             alignItems: align,
+                             gap: gap + 'px'
+                         }">
+                        
+                        <template x-for="n in itemCount" :key="n">
+                            <div class="rounded-xl font-extrabold text-white shadow-lg flex flex-col items-center justify-center border border-white/20 transition-all duration-300 select-none"
+                                 :class="[
+                                     n === 1 ? 'bg-indigo-600' : '',
+                                     n === 2 ? 'bg-purple-600' : '',
+                                     n === 3 ? 'bg-pink-600' : '',
+                                     n === 4 ? 'bg-amber-600' : '',
+                                     n === 5 ? 'bg-emerald-600' : ''
+                                 ]"
+                                 :style="{
+                                     minWidth: '64px',
+                                     minHeight: n === 2 ? '84px' : '64px', /* Item 2 dibuat sedikit lebih tinggi agar efek align-items baseline/center/stretch terlihat jelas */
+                                     padding: '10px 14px'
+                                 }">
+                                <span class="text-base" x-text="n"></span>
+                                <span class="text-[9px] font-mono opacity-75" x-text="'Item ' + n"></span>
+                            </div>
+                        </template>
+
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-slate-500 mt-3 text-center">
+                    *Kotak #2 sengaja dibuat sedikit lebih tinggi agar perbedaan <code class="text-slate-400">stretch</code>, <code class="text-slate-400">center</code>, dan <code class="text-slate-400">baseline</code> terlihat kontras.
+                </p>
+            </div>
+
+            <!-- Right: Property Controls (5 Cols) -->
+            <div class="lg:col-span-5 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5 flex flex-col justify-between">
+                <div class="space-y-5">
+                    
+                    <!-- 1. flex-direction -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-amber-400 uppercase tracking-wider">1. flex-direction (Penentu Arah Sumbu)</label>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <template x-for="dir in ['row', 'row-reverse', 'column', 'column-reverse']">
+                                <button @click="direction = dir"
+                                        :class="direction === dir ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20' : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'"
+                                        class="py-2 px-3 rounded-lg text-xs code-font transition-all text-left flex items-center justify-between">
+                                    <span x-text="dir"></span>
+                                    <span class="text-[10px] opacity-75" x-text="dir === 'row' ? '➔' : dir === 'row-reverse' ? '⬅' : dir === 'column' ? '⬇' : '⬆'"></span>
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- 2. justify-content -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-indigo-400 uppercase tracking-wider">2. justify-content (Main Axis)</label>
+                            <span class="text-[10px] code-font text-indigo-300 bg-indigo-500/10 px-2 py-0.5 rounded" x-text="isRow ? '↔ Horizontal' : '↕ Vertikal'"></span>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                            <template x-for="jc in ['flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly']">
+                                <button @click="justify = jc"
+                                        :class="justify === jc ? 'bg-indigo-600 text-white font-bold shadow-lg shadow-indigo-500/25' : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'"
+                                        class="py-2 px-2 rounded-lg text-[11px] code-font transition-all truncate"
+                                        x-text="jc">
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- 3. align-items -->
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <label class="text-xs font-bold text-pink-400 uppercase tracking-wider">3. align-items (Cross Axis)</label>
+                            <span class="text-[10px] code-font text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded" x-text="!isRow ? '↔ Horizontal' : '↕ Vertikal'"></span>
+                        </div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <template x-for="ai in ['stretch', 'flex-start', 'center', 'flex-end', 'baseline']">
+                                <button @click="align = ai"
+                                        :class="align === ai ? 'bg-pink-600 text-white font-bold shadow-lg shadow-pink-500/25' : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'"
+                                        class="py-2 px-2 rounded-lg text-[11px] code-font transition-all"
+                                        x-text="ai">
+                                </button>
+                            </template>
+                        </div>
+                    </div>
+
+                    <!-- 4. gap -->
+                    <div>
+                        <div class="flex justify-between text-xs font-semibold mb-1.5">
+                            <span class="text-slate-300">4. gap (Jarak Antar Item)</span>
+                            <span class="code-font text-emerald-400" x-text="gap + 'px'"></span>
+                        </div>
+                        <input type="range" min="0" max="40" step="4" x-model="gap" class="w-full accent-emerald-500 cursor-pointer">
+                    </div>
+
+                </div>
+
+                <!-- Live CSS Output -->
+                <div class="bg-slate-950 border border-slate-800 rounded-xl p-4 mt-4">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Live CSS Code</span>
+                        <button @click="navigator.clipboard.writeText(generatedCSS); alert('Kode CSS Flexbox disalin!')" class="text-[11px] text-indigo-400 hover:text-indigo-300 font-semibold">
+                            📋 Salin
+                        </button>
+                    </div>
+                    <pre class="code-font text-xs text-sky-300 leading-relaxed overflow-x-auto" x-text="generatedCSS"></pre>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</body>
+</html>
