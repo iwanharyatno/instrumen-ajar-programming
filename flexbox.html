@@ -22,7 +22,7 @@
 <body class="bg-slate-950 text-slate-100 min-h-screen p-4 md:p-8" x-data="{
     direction: 'row',
     justify: 'flex-start',
-    align: 'stretch',
+    align: 'baseline',
     gap: 12,
     showAxes: true,
     itemCount: 3,
@@ -192,7 +192,7 @@
                             <label class="text-xs font-bold text-amber-400 uppercase tracking-wider">1. flex-direction (Penentu Arah Sumbu)</label>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
-                            <template x-for="dir in ['row', 'row-reverse', 'column', 'column-reverse']">
+                            <template x-for="dir in ['row', 'column']">
                                 <button @click="direction = dir"
                                         :class="direction === dir ? 'bg-amber-500 text-slate-950 font-bold shadow-lg shadow-amber-500/20' : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'"
                                         class="py-2 px-3 rounded-lg text-xs code-font transition-all text-left flex items-center justify-between">
@@ -227,7 +227,7 @@
                             <span class="text-[10px] code-font text-pink-300 bg-pink-500/10 px-2 py-0.5 rounded" x-text="!isRow ? '↔ Horizontal' : '↕ Vertikal'"></span>
                         </div>
                         <div class="grid grid-cols-3 gap-2">
-                            <template x-for="ai in ['stretch', 'flex-start', 'center', 'flex-end', 'baseline']">
+                            <template x-for="ai in ['flex-start', 'center', 'flex-end', 'stretch']">
                                 <button @click="align = ai"
                                         :class="align === ai ? 'bg-pink-600 text-white font-bold shadow-lg shadow-pink-500/25' : 'bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700'"
                                         class="py-2 px-2 rounded-lg text-[11px] code-font transition-all"
